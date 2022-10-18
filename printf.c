@@ -15,24 +15,35 @@ int _printf(const char *format, ...)
 {
 	va_list ap;
 	int i, j;
-	char *str;
+	char *str, ch;
 
 	va_start(ap, format);
 	for (i = 0; format[i] != '\0'; i++)
 	{
+		/* if there is % */
+		if (format[i] == '%')
+		{
+			switch (*++format)
+			{
+				case 's':
+					str = va_arg(ap, char *);
+					for (j = 0; str[j] != '\0'; j++)
+						_write(str[j]);
+					break;
+				case 'c':
+					ch = va_arg(ap, int);
+					_write(ch);
+					break;
+				default:
+					_write(*format);
+					break;
+			}
+		}	
 		if (format[i] != '%')
 		{
 			_write(format[i]);
 			continue;
 		}
-		/* if there is % */
-		switch (*++format)
-		{
-			case 's':
-				str = va_arg(ap, char *);
-				for (j = 0; str[j] != '\0'; j++)
-					_write(str[j]);
-		}	
 	}
 
 	va_end(ap);
