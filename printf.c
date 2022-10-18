@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <unistd.h>
 #include <stdarg.h>
 #include "main.h"
 
@@ -15,15 +14,26 @@
 int _printf(const char *format, ...)
 {
 	va_list ap;
-	int i = 0;
+	int i, j;
 	char *str;
 
 	va_start(ap, format);
-	if (format[i] != '%')
+	for (i = 0; format[i] != '\0'; i++)
 	{
-		_write(*format);
+		if (format[i] != '%')
+		{
+			_write(format[i]);
+			continue;
+		}
+		/* if there is % */
+		switch (*++format)
+		{
+			case 's':
+				str = va_arg(ap, char *);
+				for (j = 0; str[j] != '\0'; j++)
+					_write(str[j]);
+		}	
 	}
-
 
 	va_end(ap);
 	return (*format);
