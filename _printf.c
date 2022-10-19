@@ -1,51 +1,47 @@
-#include <stdlib.h>
-#include <stdarg.h>
 #include "main.h"
 
 /**
- * _printf - Print to stdout, standard output stream.
- * @format: A character string. 
- *
- * Description: The format string is composed of zero or more directives.
- * Handle the following conversion specifers: c, s, %
- * Return: The number of characters printed (excluding the null byte
- * used to end output to strings).
+ * _printf - produces output according to a format
+ * @format: format string containing the characters and the specifiers
+ * Description: this function will call the get_print() function that will
+ * determine which printing function to call depending on the conversion
+ * specifiers contained into fmt
+ * Return: length of the formatted output string
  */
 int _printf(const char *format, ...)
 {
-	va_list ap;
-	int i, j;
-	char *str, ch;
+	int (*pfunc)(va_list, flags_t *);
+	const char *p;
+	va_list arguments;
+	flags_t flags = {0, 0, 0};
 
-	va_start(ap, format);
-	for (i = 0; format[i] != '\0'; i++)
+	register int count = 0;
+
+	va_start(arguments, format);
+	if (!format || (format[0] == '%' && !format[1]))
+		return (-1);
+	if (format[0] == '%' && format[1] == ' ' && !format[2])
+		return (-1);
+	for (p = format; *p; p++)
 	{
-		/* if there is % */
-		if (format[i] == '%')
+		if (*p == '%')
 		{
-			switch (*++format)
+			p++;
+			if (*p == '%')
 			{
-				case 's':
-					str = va_arg(ap, char *);
-					for (j = 0; str[j] != '\0'; j++)
-						_write(str[j]);
-					break;
-				case 'c':
-					ch = va_arg(ap, int);
-					_write(ch);
-					break;
-				default:
-					_write(*format);
-					break;
+				count += _putchar('%');
+				continue;
 			}
-		}	
-		if (format[i] != '%')
-		{
-			_write(format[i]);
-			continue;
-		}
+			while (get_flag(*p, &flags))
+				p++;
+			pfunc = get_print(*p);
+			count += (pfunc)
+				? pfunc(arguments, &flags)
+				: _printf("%%%c", *p);
+		} else
+			count += _putchar(*p);
 	}
-
-	va_end(ap);
-	return (*format);
+	_putchar(-1);
+	va_end(arguments);
+	return (count);
 }
